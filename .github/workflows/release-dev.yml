@@ -16,7 +16,6 @@ jobs:
   audit:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    continue-on-error: true
     outputs:
       audit_passed: ${{ steps.audit.outcome == 'success' }}
     steps:
@@ -28,7 +27,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - name: Run audit
         id: audit
-        run: npm audit --omit=dev
+        run: npm audit --omit=dev --audit-level=critical
 
   tests:
     if: github.event.pull_request.merged == true
