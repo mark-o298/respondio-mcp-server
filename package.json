@@ -67,6 +67,8 @@
     "homepage": "https://github.com/respond-io/mcp-server#readme",
     "dependencies": {
         "@modelcontextprotocol/sdk": "^1.27.1",
+        "@types/node": "^25.3.2",
+        "typescript": "^5.9.3",
         "@respond-io/typescript-sdk": "https://registry.npmjs.org/@respond-io/typescript-sdk/-/typescript-sdk-1.2.0.tgz",
         "cors": "^2.8.6",
         "express": "^5.2.1",
