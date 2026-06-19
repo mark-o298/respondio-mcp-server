@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: respondio-mcp-server
+    runtime: node
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: node dist/index.js
+    healthCheckPath: /health
+    envVars:
+      - key: RESPONDIO_API_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzAwNDksInNwYWNlSWQiOjMzOTc0Niwib3JnSWQiOjMzNTEyMSwidHlwZSI6ImFwaSIsImlhdCI6MTc4MTQ5MjU3M30.YvtVVhS0Nt0X3SQBRm4nkGDOlScLbAEiNJjvbyvDi0U
+      - key: MCP_SERVER_MODE
+        value: http
+      - key: PORT
+        value: "3000"
+      - key: NODE_ENV
+        value: production
