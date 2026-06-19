@@ -1,0 +1,76 @@
+import { z } from "zod";
+import { API_CONFIG } from "../constants.js";
+// Define the validation schema for the JWT payload
+const jwtPayloadSchema = z.object({
+    iat: z.number(),
+    id: z.number(),
+    spaceId: z.number(),
+    type: z.string(),
+    orgId: z.number(),
+});
+/**
+ * Middleware to verify the authenticity of a JSON Web Token (JWT).
+ * If RESPONDIO_API_KEY is set in the environment, it is used as the authorization token.
+ * Otherwise, this middleware checks for the presence of a Bearer token in the `Authorization` header,
+ * validates its format, and ensures the payload contains all the required fields.
+ * If the token is valid, the decoded payload is attached to the `req.user` property.
+ *
+ * @param {Request} req - The Express request object.
+ * @param {Response} res - The Express response object.
+ * @param {NextFunction} next - The next middleware function in the chain.
+ */
+export const tokenVerifier = (req, res, next) => {
+    // If RESPONDIO_API_KEY is set, use it as the authorization header
+    if (API_CONFIG.API_KEY) {
+        req.headers.authorization = API_CONFIG.API_KEY.startsWith("Bearer ")
+            ? API_CONFIG.API_KEY
+            : `Bearer ${API_CONFIG.API_KEY}`;
+    }
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            res.status(401).json({ error: "No authorization header provided" });
+            return;
+        }
+        const parts = authHeader.split(" ");
+        if (parts.length !== 2 || parts[0] !== "Bearer") {
+            res
+                .status(401)
+                .json({ error: "Invalid authorization header format. Expected: Bearer <token>" });
+            return;
+        }
+        const token = parts[1];
+        const tokenParts = token.split(".");
+        if (tokenParts.length !== 3) {
+            res.status(401).json({ error: "Invalid JWT format" });
+            return;
+        }
+        const payload = JSON.parse(Buffer.from(tokenParts[1], "base64url").toString("utf-8"));
+        // Validate the payload against the schema
+        const validationResult = jwtPayloadSchema.safeParse(payload);
+        if (!validationResult.success) {
+            res.status(401).json({
+                error: "Invalid token payload",
+                details: validationResult.error.flatten(),
+            });
+            return;
+        }
+        req.user = validationResult.data;
+        next();
+    }
+    catch (error) {
+        if (error instanceof Error) {
+            res.status(401).json({
+                error: "Invalid token",
+                details: error.message,
+            });
+        }
+        else {
+            res.status(401).json({
+                error: "Invalid token",
+                details: "Unknown error",
+            });
+        }
+    }
+};
+//# sourceMappingURL=TokenVerifier.js.map
